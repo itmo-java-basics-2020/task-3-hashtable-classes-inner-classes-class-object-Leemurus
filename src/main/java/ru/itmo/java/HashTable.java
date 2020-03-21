@@ -1,7 +1,7 @@
 package ru.itmo.java;
 
 public class HashTable {
-    private class Entry {
+    private static class Entry {
         private Object key, value;
 
         Entry(Object key, Object value) {
@@ -18,7 +18,7 @@ public class HashTable {
         }
     }
 
-    private int size, count;
+    private int capacity, size;
     private Entry[] arr;
     private double loadFactor;
 
@@ -28,24 +28,24 @@ public class HashTable {
 
     HashTable(int initialCapacity, double loadFactor) {
         this.loadFactor = loadFactor;
-        this.size = initialCapacity;
+        this.capacity = initialCapacity;
         this.arr = new Entry[initialCapacity];
-        this.count = 0;
+        this.size = 0;
     }
 
     private int getHashIndex(Object object) {
-        return (object.hashCode() % size + size) % size;
+        return (object.hashCode() % capacity + capacity) % capacity;
     }
 
-    private int getNextHashIndex(int index, Object object) {
-        return (index + 12347) % size;
+    private int getNextHashIndex(int index) {
+        return (index + 12347) % capacity;
     }
 
     private void changeTableSize(int size) {
         Entry[] oldArr = arr;
         this.arr = new Entry[size];
-        this.size = size;
-        this.count = 0;
+        this.capacity = size;
+        this.size = 0;
 
         for (Entry entry : oldArr) {
             if (entry != null && entry.getKey() != null) {
@@ -55,15 +55,15 @@ public class HashTable {
     }
 
     private void optimizeTable() {
-        if (count == (int) (loadFactor * size)) {
-            changeTableSize(size * 2);
+        if (size == (int) (loadFactor * capacity)) {
+            changeTableSize(capacity * 2);
         }
     }
 
     private int getIndex(Object key) {
         int index = getHashIndex(key);
         while (arr[index] != null && (arr[index].getKey() == null || !arr[index].getKey().equals(key))) {
-            index = getNextHashIndex(index, key);
+            index = getNextHashIndex(index);
         }
         return index;
     }
@@ -71,7 +71,7 @@ public class HashTable {
     private int getFirstCleanPairIndex(Object key) {
         int index = getHashIndex(key);
         while (arr[index] != null && arr[index].getKey() != null) {
-            index = getNextHashIndex(index, key);
+            index = getNextHashIndex(index);
         }
         return index;
     }
@@ -82,7 +82,7 @@ public class HashTable {
         }
 
         Object prevValue = getValueUsingIndex(index);
-        count += (getKeyUsingIndex(index) == null ? 1 : 0);
+        size += (getKeyUsingIndex(index) == null ? 1 : 0);
         arr[index] = new Entry(key, value);
         return prevValue;
     }
@@ -93,7 +93,7 @@ public class HashTable {
         }
 
         Object prevValue = getValueUsingIndex(index);
-        count -= (arr[index].getKey() == null ? 0 : 1);
+        size -= (arr[index].getKey() == null ? 0 : 1);
         arr[index] = new Entry(null, null);
         return prevValue;
     }
@@ -121,6 +121,6 @@ public class HashTable {
     }
 
     int size() {
-        return count;
+        return size;
     }
 }
